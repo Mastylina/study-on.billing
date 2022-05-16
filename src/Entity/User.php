@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Model\UserDTO;
 use App\Repository\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
@@ -35,6 +36,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @ORM\Column(type="string")
      */
     private $password;
+
+    /**
+     * @ORM\Column(type="float",options={"default":0})
+     */
+    private $balance;
 
     public function getId(): ?int
     {
@@ -123,5 +129,25 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         // If you store any temporary, sensitive data on the user, clear it here
         // $this->plainPassword = null;
+    }
+    public static function fromDto(UserDTO $userDTO): self
+    {
+        $user = new self();
+        $user->setEmail($userDTO->username);
+        $user->setRoles(["ROLE_USER"]);
+        $user->setPassword($userDTO->password);
+        return $user;
+    }
+
+    public function getBalance(): ?float
+    {
+        return $this->balance;
+    }
+
+    public function setBalance(float $balance): self
+    {
+        $this->balance = $balance;
+
+        return $this;
     }
 }
