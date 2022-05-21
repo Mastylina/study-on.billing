@@ -15,7 +15,7 @@ use Symfony\Component\Routing\Annotation\Route;
 class UserController extends AbstractController
 {
     /**
-     * @Route("/current", name="current_user", methods={"POST"})
+     * @Route("/current", name="current_user", methods={"GET"})
      * @param SerializerInterface $serializer
      * @return Response
      */
