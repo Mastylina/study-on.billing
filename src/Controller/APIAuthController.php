@@ -37,13 +37,7 @@ class APIAuthController extends AbstractController
         JWTTokenManagerInterface $JWTManager
     ): Response {
         // Десериализация
-        try{
-            $userDTO = $serializer->deserialize($request->getContent(), UserDTO::class, 'json');
-        }
-        catch (\Exception $e) {
-            dd($e->getMessage());
-        }
-
+        $userDTO = $serializer->deserialize($request->getContent(), UserDTO::class, 'json');
         $data = [];
         $response = new Response();
         // Проверяем ошибки при валидации
