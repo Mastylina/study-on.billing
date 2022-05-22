@@ -6,15 +6,25 @@ use App\Model\UserDTO;
 use App\Repository\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use OpenApi\Annotations as OA;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
+ * @OA\Schema(
+ *     title="User",
+ *     description="User"
+ * )
  * @ORM\Entity(repositoryClass=UserRepository::class)
  * @ORM\Table(name="`billing_user`")
  */
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     /**
+     * @OA\Property(
+     *     format="int64",
+     *     title="Id",
+     *     description="Id"
+     * )
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
@@ -27,17 +37,32 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private $email;
 
     /**
+     * @OA\Property(
+     *     format="email",
+     *     title="Email",
+     *     description="Email"
+     * )
      * @ORM\Column(type="json")
      */
     private $roles = [];
 
     /**
+     * @OA\Property(
+     *     format="string",
+     *     title="Password",
+     *     description="Password"
+     * )
      * @var string The hashed password
      * @ORM\Column(type="string")
      */
     private $password;
 
     /**
+     * @OA\Property(
+     *     format="float",
+     *     title="Balance",
+     *     description="Balance"
+     * )
      * @ORM\Column(type="float",options={"default":0})
      */
     private $balance;
@@ -130,12 +155,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         // If you store any temporary, sensitive data on the user, clear it here
         // $this->plainPassword = null;
     }
-    public static function fromDto(UserDTO $userDTO): self
+    public static function fromDTO(UserDTO $userDTO): self
     {
         $user = new self();
         $user->setEmail($userDTO->username);
         $user->setRoles(["ROLE_USER"]);
         $user->setPassword($userDTO->password);
+        $user->setBalance(0);
         return $user;
     }
 

@@ -5,6 +5,7 @@ namespace App\Controller;
 
 use App\Entity\User;
 use JMS\Serializer\SerializerInterface;
+use OpenApi\Annotations as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -15,6 +16,51 @@ use Symfony\Component\Routing\Annotation\Route;
 class UserController extends AbstractController
 {
     /**
+     * @OA\Post(
+     *     path="/api/v1/users/current",
+     *     tags={"User"},
+     *     summary="Информация о пользователе",
+     *     description="Информация о пользователе",
+     *     operationId="current",
+     *     @OA\Response(
+     *          response="200",
+     *          description="Успешная операция",
+     *          @OA\JsonContent(
+     *              @OA\Property(
+     *                  property="username",
+     *                  type="string"
+     *              ),
+     *              @OA\Property(
+     *                  property="roles",
+     *                  type="array",
+     *                  @OA\Items(
+     *                      type="string"
+     *                  )
+     *              ),
+     *              @OA\Property(
+     *                  property="balance",
+     *                  type="number",
+     *                  format="float"
+     *              ),
+     *          )
+     *     ),
+     *     @OA\Response(
+     *          response="401",
+     *          description="Неудалось получить данные",
+     *          @OA\JsonContent(
+     *              @OA\Property(
+     *                  property="code",
+     *                  type="string",
+     *                  example="401"
+     *              ),
+     *              @OA\Property(
+     *                  property="message",
+     *                  type="string",
+     *                  example="JWT Token не найден"
+     *              )
+     *          )
+     *     )
+     * )
      * @Route("/current", name="current_user", methods={"GET"})
      * @param SerializerInterface $serializer
      * @return Response

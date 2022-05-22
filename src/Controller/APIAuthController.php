@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\User;
 use App\Model\UserDTO;
 use JMS\Serializer\SerializerInterface;
+use OpenApi\Annotations as OA;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -19,6 +20,54 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 class APIAuthController extends AbstractController
 {
     /**
+     * @OA\Post (
+     *     path="/api/v1/auth",
+     *     tags={"User"},
+     *     summary="Автроизация пользователя",
+     *     description="Автроизация пользователя",
+     *     operationId="auth",
+     *     @OA\RequestBody(
+     *          required=true,
+     *          @OA\JsonContent(
+     *              @OA\Property(
+     *                  property="username",
+     *                  type="string",
+     *                  example="user@yandex.ru"
+     *              ),
+     *              @OA\Property(
+     *                  property="password",
+     *                  type="string",
+     *                  example="user123"
+     *              )
+     *          )
+     *     ),
+     *     @OA\Response(
+     *          response="200",
+     *          description="Успешная авторизация",
+     *          @OA\JsonContent(
+     *              @OA\Property(
+     *                  property="token",
+     *                  type="string"
+     *              )
+     *          )
+     *     ),
+     *     @OA\Response(
+     *          response="401",
+     *          description="Неудалось авторизоваться",
+     *          @OA\JsonContent(
+     *              @OA\Property(
+     *                  property="code",
+     *                  type="string",
+     *                  example="401"
+     *              ),
+     *              @OA\Property(
+     *                  property="message",
+     *                  type="string",
+     *                  example="Неверные учетные данные"
+     *              )
+     *          )
+     *     )
+     *  )
      * @Route("/auth", name="api_auth",  methods={"POST"})
      */
     public function auth(): void
@@ -27,6 +76,54 @@ class APIAuthController extends AbstractController
     }
 
     /**
+     * @OA\Post(
+     *     path="/api/v1/register",
+     *     tags={"User"},
+     *     summary="Регистрация нового пользователя",
+     *     description="Регистрация доступна только для новых пользователей",
+     *     operationId="register",
+     *     @OA\RequestBody(
+     *          required=true,
+     *          @OA\JsonContent(ref="#/components/schemas/UserDTO")
+     *     ),
+     *     @OA\Response(
+     *          response="201",
+     *          description="Регистрация прошла успешно",
+     *          @OA\JsonContent(
+     *              @OA\Property(
+     *                  property="token",
+     *                  type="string"
+     *              )
+     *          )
+     *     ),
+     *     @OA\Response(
+     *          response="500",
+     *          description="Сервер не отвечает"
+     *     ),
+     *     @OA\Response(
+     *          response="400",
+     *          description="Ошибка при валидации данных",
+     *          @OA\JsonContent(
+     *              @OA\Property(
+     *                  property="message",
+     *                  type="array",
+     *                  @OA\Items(
+     *                      type="string"
+     *                  )
+     *              )
+     *          )
+     *     ),
+     *     @OA\Response(
+     *          response="403",
+     *          description="Данный пользователь уже существует",
+     *          @OA\JsonContent(
+     *              @OA\Property(
+     *                  property="message",
+     *                  type="string"
+     *              )
+     *          )
+     *     )
+     * )
      * @Route("/register", name="register", methods={"POST"})
      */
     public function register(
@@ -67,7 +164,7 @@ class APIAuthController extends AbstractController
         } else {
             // Создаем пользователя
             //dd($userDTO);
-            $user = User::fromDto($userDTO);
+            $user = User::fromDTO($userDTO);
             $user->setPassword($passwordEncoder->hashPassword(
                 $user,
                 $user->getPassword()
