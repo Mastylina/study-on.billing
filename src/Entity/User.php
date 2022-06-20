@@ -7,6 +7,7 @@ use App\Repository\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use OpenApi\Annotations as OA;
+use JMS\Serializer\Annotation as Serializer;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
@@ -20,11 +21,6 @@ use Symfony\Component\Security\Core\User\UserInterface;
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     /**
-     * @OA\Property(
-     *     format="int64",
-     *     title="Id",
-     *     description="Id"
-     * )
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
@@ -37,32 +33,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private $email;
 
     /**
-     * @OA\Property(
-     *     format="email",
-     *     title="Email",
-     *     description="Email"
-     * )
      * @ORM\Column(type="json")
      */
     private $roles = [];
 
     /**
-     * @OA\Property(
-     *     format="string",
-     *     title="Password",
-     *     description="Password"
-     * )
      * @var string The hashed password
      * @ORM\Column(type="string")
      */
     private $password;
 
     /**
-     * @OA\Property(
-     *     format="float",
-     *     title="Balance",
-     *     description="Balance"
-     * )
      * @ORM\Column(type="float",options={"default":0})
      */
     private $balance;

@@ -11,6 +11,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *     description="UserDTO"
  * )
  *
+ *
  * Class UserDTO
  * @package App\Model
  */
@@ -18,7 +19,7 @@ class UserDTO
 {
     /**
      * @OA\Property(
-     *     format="username",
+     *     type="string",
      *     title="username",
      *     description="username",
      *     example="test@yandex.ru"
@@ -30,7 +31,7 @@ class UserDTO
 
     /**
      * @OA\Property(
-     *     format="string",
+     *     type="string",
      *     title="Password",
      *     description="Password",
      *     example="test123"
@@ -43,4 +44,26 @@ class UserDTO
      * @Assert\NotBlank()
      */
     public $password;
+    /**
+     * @OA\Property(
+     *     type="array",
+     *     @OA\Items(
+     *         type="string"
+     *     ),
+     *     title="Roles",
+     *     description="Roles"
+     * )
+     * @Serializer\Type("array")
+     */
+    public $roles = [];
+
+    /**
+     * @OA\Property(
+     *     type="float",
+     *     title="Balance",
+     *     description="Balance"
+     * )
+     * @Serializer\Type("float")
+     */
+    public  $balance;
 }

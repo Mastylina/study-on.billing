@@ -4,11 +4,14 @@
 namespace App\Controller;
 
 use App\Entity\User;
+use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use JMS\Serializer\SerializerInterface;
 use OpenApi\Annotations as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+
 
 /**
  * @Route("/api/v1/users")
@@ -16,7 +19,7 @@ use Symfony\Component\Routing\Annotation\Route;
 class UserController extends AbstractController
 {
     /**
-     * @OA\Post(
+     * @OA\Get(
      *     path="/api/v1/users/current",
      *     tags={"User"},
      *     summary="Информация о пользователе",
@@ -40,7 +43,7 @@ class UserController extends AbstractController
      *              @OA\Property(
      *                  property="balance",
      *                  type="number",
-     *                  format="float"
+     *                  type="float"
      *              ),
      *          )
      *     ),
@@ -65,7 +68,7 @@ class UserController extends AbstractController
      * @param SerializerInterface $serializer
      * @return Response
      */
-    public function current(SerializerInterface $serializer): Response
+    public function current(SerializerInterface $serializer,EntityManagerInterface $entityManager): Response
     {
         // Получаем пользователя
         $user = $this->getUser();
@@ -79,8 +82,7 @@ class UserController extends AbstractController
             ];
             $response->setStatusCode(Response::HTTP_NOT_FOUND);
         } else {
-            // Если всё ок, и пользователь существует, то:
-            $entityManager = $this->getDoctrine()->getManager();
+
             $userRepository = $entityManager->getRepository(User::class);
             // Получаем информацию о пользователе
             $user = $userRepository->findOneBy(['email' => $user->getUsername()]);
