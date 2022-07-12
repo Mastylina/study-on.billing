@@ -30,10 +30,10 @@ class AuthControllerTest extends AbstractTest
         $this->serializer = self::$kernel->getContainer()->get('jms_serializer');
     }
 
-    // Тест успешного входа в систему
+    // Успешный вход
     public function testAuthSuccessful(): void
     {
-        // Авторизируемся существующим пользователем
+
         $user = [
             'username' => 'anna@admin.com',
             'password' => '123654',
@@ -64,10 +64,10 @@ class AuthControllerTest extends AbstractTest
     // Тест неуспешного входа в систему
     public function testAuthUnsuccessful(): void
     {
-        // Авторизируемся существующим пользователем, но не с верным паролем
+        // Авторизируемся существующим пользователем с неверным паролем
         $user = [
             'username' => 'anna@admin.com',
-            'password' => 'user911',
+            'password' => 'user1235',
         ];
 
         // Формируем запрос
@@ -95,7 +95,7 @@ class AuthControllerTest extends AbstractTest
     // Тест успешной регистрации
     public function testRegisterSuccessful(): void
     {
-        // Передадим данные о новом пользователе
+        // Регистрация нового пользователя
         $user = [
             'username' => 'testUser2000@mail.ru',
             'password' => '123654',
@@ -126,8 +126,7 @@ class AuthControllerTest extends AbstractTest
     // Тест для неуспешной регистрации
     public function testExistUserRegister(): void
     {
-        //_____________Проверка на уже существующего пользователя_____________
-        // Данные пользователя
+        //Регистрация существующего пользователя
         $user = [
             'username' => 'anna@admin.com',
             'password' => '123654',
@@ -144,7 +143,7 @@ class AuthControllerTest extends AbstractTest
         // Проверка статуса ответа, 403
         $this->assertResponseCode(Response::HTTP_FORBIDDEN, $client->getResponse());
 
-        // Проверка заголовка ответа, что он действительно в формате json
+        // Проверка заголовка ответа, что он в формате json
         self::assertTrue($client->getResponse()->headers->contains(
             'Content-Type',
             'application/json'
@@ -154,8 +153,7 @@ class AuthControllerTest extends AbstractTest
         $json = json_decode($client->getResponse()->getContent(), true);
         self::assertEquals('Пользователь с данным email уже существует', $json['message']);
 
-        //_____________Проверка валидации полей_____________
-        // Данные пользователя, где пароль состоит менее чем из 6-и символов
+        //Пароль меньше 6 символов
         $user = [
             'email' => 'testAnna@yandex.ru',
             'password' => 'test',

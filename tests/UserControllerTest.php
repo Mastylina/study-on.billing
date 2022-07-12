@@ -56,8 +56,7 @@ class UserControllerTest extends AbstractTest
         // Получаем токен клиента
         $token = $json['token'];
 
-        //_____________Проверка успешной операции получения данных_____________
-        // Формирование верного запроса
+
         $contentHeaders = [
             'HTTP_AUTHORIZATION' => 'Bearer ' . $token,
             'CONTENT_TYPE' => 'application/json',
@@ -90,8 +89,8 @@ class UserControllerTest extends AbstractTest
         self::assertEquals($responseUserDTO->roles[0], $user->getRoles()[0]);
         self::assertEquals($responseUserDTO->balance, $user->getBalance());
 
-        //_____________Проверка неуспешной операции (jwt токен неверный)_____________
-        $token = 'шишль мышль';
+        //если токен не верный
+        $token = 'хоп оп';
         // Передаем неверный токен
         $contentHeaders = [
             'HTTP_AUTHORIZATION' => 'Bearer ' . $token,

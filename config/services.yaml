@@ -25,3 +25,7 @@ services:
     App\Listeners\ExceptionListener:
         tags:
             - { name: kernel.event_listener, event: kernel.exception }
+    Gesdinet\JWTRefreshTokenBundle\Service\RefreshToken:
+        alias: "gesdinet.jwtrefreshtoken"
+    Gesdinet\JWTRefreshTokenBundle\Model\RefreshTokenManagerInterface:
+        alias: "gesdinet.jwtrefreshtoken.refresh_token_manager"

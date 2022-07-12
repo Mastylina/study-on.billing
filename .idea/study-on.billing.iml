@@ -98,6 +98,7 @@
       <excludeFolder url="file://$MODULE_DIR$/vendor/phpdocumentor/reflection-common" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/browser-kit" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/dom-crawler" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/bin/.phpunit" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
