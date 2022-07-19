@@ -28,7 +28,7 @@ class AppFixtures extends Fixture
 
         $user->setEmail('artem@user.com');
         $user->setPassword($this->passwordHasher->hashPassword($user, '123654'));
-        $user->setBalance(4);
+        $user->setBalance(10000);
         $manager->persist($user_admin);
         $manager->persist($user);
 

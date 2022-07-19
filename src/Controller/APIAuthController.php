@@ -185,7 +185,7 @@ class APIAuthController extends AbstractController
                 $user,
                 $user->getPassword()
             ));
-            $user->setBalance(0);
+            $user->setBalance(10000);
             $entityManager->persist($user);
             $entityManager->flush();
 

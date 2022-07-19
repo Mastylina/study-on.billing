@@ -17,6 +17,12 @@ class Transaction
      */
     private $id;
 
+    private const TYPES_OPERATION = [
+        1 => 'payment',
+        2 => 'deposit',
+    ];
+
+
     /**
      * @ORM\ManyToOne(targetEntity=User::class, inversedBy="transactions")
      * @ORM\JoinColumn(nullable=false)
@@ -28,10 +34,7 @@ class Transaction
      */
     private $course;
 
-    private const TYPES_OPERATION = [
-        1 => 'payment',
-        2 => 'deposit',
-    ];
+
 
     /**
      * @ORM\Column(type="smallint")
@@ -39,19 +42,20 @@ class Transaction
     private $type;
 
     /**
-     * @ORM\Column(type="float", nullable=true)
+     * @ORM\Column(type="float")
      */
     private $amount;
 
     /**
-     * @ORM\Column(type="datetime", nullable=true)
+     * @ORM\Column(type="datetime")
      */
     private $createdAt;
 
     /**
-     * @ORM\Column(type="datetime")
+     * @ORM\Column(type="datetime", nullable=true)
      */
     private $expiresAt;
+
 
     public function getId(): ?int
     {
@@ -82,20 +86,6 @@ class Transaction
         return $this;
     }
 
-    public function getTypeOperationFormatNumber(): ?int
-    {
-        return $this->type;
-    }
-
-    public function getTypeOperationFormatString(): ?string
-    {
-        return self::TYPES_OPERATION[$this->type];
-    }
-
-    public function getType(): ?int
-    {
-        return $this->type;
-    }
 
     public function setType(int $type): self
     {
@@ -138,5 +128,15 @@ class Transaction
         $this->expiresAt = $expiresAt;
 
         return $this;
+    }
+
+    public function getTypeOperationFormatNumber(): ?int
+    {
+        return $this->type;
+    }
+
+    public function getTypeOperationFormatString(): ?string
+    {
+        return self::TYPES_OPERATION[$this->type];
     }
 }

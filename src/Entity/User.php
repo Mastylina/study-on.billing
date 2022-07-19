@@ -154,7 +154,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $user->setEmail($userDTO->username);
         $user->setRoles(["ROLE_USER"]);
         $user->setPassword($userDTO->password);
-        $user->setBalance(0);
+        $user->setBalance(10000);
         return $user;
     }
 
