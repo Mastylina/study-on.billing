@@ -3,34 +3,66 @@
 namespace App\DataFixtures;
 
 use App\Entity\User;
+use App\Service\PaymentService;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
+use Gesdinet\JWTRefreshTokenBundle\Doctrine\RefreshTokenManager;
+use Gesdinet\JWTRefreshTokenBundle\Generator\RefreshTokenGeneratorInterface;
+use Gesdinet\JWTRefreshTokenBundle\Model\RefreshTokenManagerInterface;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasher;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class AppFixtures extends Fixture
 {
-    private UserPasswordHasherInterface $passwordHasher;
+    private $passwordHasher;
+    private $paymentService;
+    private $refreshTokenGenerator;
+    private $refreshTokenManager;
 
-    public function __construct(UserPasswordHasherInterface $passwordHasher)
-    {
+    public function __construct(
+        UserPasswordHasherInterface $passwordHasher,
+        PaymentService $paymentService,
+        RefreshTokenGeneratorInterface $refreshTokenGenerator,
+        RefreshTokenManagerInterface $refreshTokenManager) {
         $this->passwordHasher = $passwordHasher;
+        $this->paymentService = $paymentService;
+        $this->refreshTokenManager = $refreshTokenManager;
+        $this->refreshTokenGenerator = $refreshTokenGenerator;
     }
 
-    public function load(ObjectManager $manager)
+    public function load(ObjectManager $manager): void
     {
-        $user_admin = new User();
         $user = new User();
-
-        $user_admin->setEmail('anna@admin.com');
-        $user_admin->setPassword($this->passwordHasher->hashPassword($user_admin, '123654'));
-        $user_admin->setRoles(['ROLE_SUPER_ADMIN']);
-        $user_admin->setBalance(4);
-
         $user->setEmail('artem@user.com');
-        $user->setPassword($this->passwordHasher->hashPassword($user, '123654'));
-        $user->setBalance(10000);
-        $manager->persist($user_admin);
+
+        $plainPassword = '123654';
+        $hashedPassword = $this->passwordHasher->hashPassword(
+            $user,
+            $plainPassword
+        );
+        $user->setPassword($hashedPassword);
+        $user->setBalance(0);
         $manager->persist($user);
+        $this->paymentService->deposit($user, $_ENV['START_AMOUNT']);
+
+        $refreshToken = $this->refreshTokenGenerator->createForUserWithTtl($user, (new \DateTime())->modify('+1 month')->getTimestamp());
+        $this->refreshTokenManager->save($refreshToken);
+
+        $superUser = new User();
+        $superUser->setEmail('anna@admin.com');
+
+        $hashedPassword = $this->passwordHasher->hashPassword(
+            $superUser,
+            $plainPassword
+        );
+        $superUser->setPassword($hashedPassword);
+        $superUser->setRoles(['ROLE_SUPER_ADMIN']);
+        $superUser->setBalance(0);
+        $manager->persist($superUser);
+        $this->paymentService->deposit($superUser, $_ENV['START_AMOUNT']);
+
+        $refreshToken = $this->refreshTokenGenerator->createForUserWithTtl($user, (new \DateTime())->modify('+1 month')->getTimestamp());
+        $this->refreshTokenManager->save($refreshToken);
 
         $manager->flush();
     }

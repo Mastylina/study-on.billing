@@ -1,183 +1,270 @@
 <?php
 
-
 namespace App\Tests;
 
 use App\DataFixtures\AppFixtures;
-use JMS\Serializer\SerializerInterface;
+use App\Service\PaymentService;
+use Gesdinet\JWTRefreshTokenBundle\Generator\RefreshTokenGeneratorInterface;
+use Gesdinet\JWTRefreshTokenBundle\Model\RefreshTokenManagerInterface;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class AuthControllerTest extends AbstractTest
 {
-    /**
-     * @var string
-     */
-    private $startingPath = '/api/v1';
-
-    /**
-     * @var SerializerInterface
-     */
     private $serializer;
-
-    public function getFixtures(): array
-    {
-        return [AppFixtures::class];
-    }
+    private string $apiPath = '/api/v1';
 
     protected function setUp(): void
     {
         parent::setUp();
+
         $this->serializer = self::$kernel->getContainer()->get('jms_serializer');
     }
 
-    // Успешный вход
-    public function testAuthSuccessful(): void
-    {
 
+    protected function getFixtures(): array
+    {
+        return [
+            new AppFixtures(
+                self::getContainer()->get(UserPasswordHasherInterface::class),
+                self::getContainer()->get(PaymentService::class),
+                self::getContainer()->get(RefreshTokenGeneratorInterface::class),
+                self::getContainer()->get(RefreshTokenManagerInterface::class)
+            )];
+    }
+
+    public function testAuthWithExistingUser(): void
+    {
         $user = [
-            'username' => 'anna@admin.com',
-            'password' => '123654',
+            'username' => 'artem@user.com',
+            'password' => '123654'
         ];
 
-        // Формируем запрос
         $client = self::getClient();
-        $client->jsonRequest(
+        $client->request(
             'POST',
-            $this->startingPath . '/auth',
-            $user
+            $this->apiPath . '/auth',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            $this->serializer->serialize($user, 'json')
         );
 
-        // Проверка статуса ответа
-        $this->assertResponseCode(Response::HTTP_OK, $client->getResponse());
+        $this->assertResponseOk();
 
-        // Проверка заголовка ответа, что он действительно в формате json
         self::assertTrue($client->getResponse()->headers->contains(
             'Content-Type',
             'application/json'
         ));
-
-        // Проверка содержимого ответа (token)
         $json = json_decode($client->getResponse()->getContent(), true);
         self::assertNotEmpty($json['token']);
+        self::assertNotEmpty($json['refresh_token']);
     }
 
-    // Тест неуспешного входа в систему
-    public function testAuthUnsuccessful(): void
+    public function testAuthWithNotExistingUser(): void
     {
-        // Авторизируемся существующим пользователем с неверным паролем
         $user = [
-            'username' => 'anna@admin.com',
-            'password' => 'user1235',
+            'username' => 'aaartem@user.com',
+            'password' => '123654'
         ];
 
-        // Формируем запрос
         $client = self::getClient();
-        $client->jsonRequest(
+        $client->request(
             'POST',
-            $this->startingPath . '/auth',
-            $user
+            $this->apiPath.'/auth',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+
+            $this->serializer->serialize($user, 'json')
         );
 
-        // Проверка статуса ответа, 401
-        $this->assertResponseCode(Response::HTTP_UNAUTHORIZED, $client->getResponse());
 
-        // Проверка заголовка ответа, что он действительно в формате json
         self::assertTrue($client->getResponse()->headers->contains(
             'Content-Type',
             'application/json'
         ));
 
-        // Проверка содержимого ответа (Сообщение об оишбке)
         $json = json_decode($client->getResponse()->getContent(), true);
+
+        self::assertNotEmpty($json['code']);
         self::assertNotEmpty($json['message']);
+
+        self::assertEquals('401', $json['code']);
+        self::assertEquals('Invalid credentials.', $json['message']);
     }
 
-    // Тест успешной регистрации
-    public function testRegisterSuccessful(): void
+    public function testRegistrationSuccessful(): void
     {
-        // Регистрация нового пользователя
         $user = [
-            'username' => 'testUser2000@mail.ru',
-            'password' => '123654',
+            'username' => 'test@test.local',
+            'password' => 'Qwerty123'
         ];
 
-        // Формируем запрос
         $client = self::getClient();
-        $client->jsonRequest(
+        $client->request(
             'POST',
-            $this->startingPath . '/register',
-            $user
+            $this->apiPath.'/register',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            $this->serializer->serialize($user, 'json')
         );
 
-        // Проверка статуса ответа, 201
-        $this->assertResponseCode(Response::HTTP_CREATED, $client->getResponse());
+        $this->assertResponseCode(Response::HTTP_CREATED);
 
-        // Проверка заголовка ответа, что он действительно в формате json
         self::assertTrue($client->getResponse()->headers->contains(
             'Content-Type',
             'application/json'
         ));
 
-        // Проверка содержимого ответа (token)
         $json = json_decode($client->getResponse()->getContent(), true);
         self::assertNotEmpty($json['token']);
+        self::assertNotEmpty($json['refresh_token']);
     }
 
-    // Тест для неуспешной регистрации
-    public function testExistUserRegister(): void
+    public function testRegistrationValidationErrors(): void
     {
-        //Регистрация существующего пользователя
         $user = [
-            'username' => 'anna@admin.com',
-            'password' => '123654',
+            'username' => 'teststudy-on.local',
+            'password' => 'Qwerty123'
         ];
 
-        // Формируем запрос
         $client = self::getClient();
-        $client->jsonRequest(
+
+        $client->request(
             'POST',
-            $this->startingPath . '/register',
-            $user
+            $this->apiPath.'/register',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            $this->serializer->serialize($user, 'json')
         );
 
-        // Проверка статуса ответа, 403
-        $this->assertResponseCode(Response::HTTP_FORBIDDEN, $client->getResponse());
+        $this->assertResponseCode(Response::HTTP_BAD_REQUEST);
 
-        // Проверка заголовка ответа, что он в формате json
         self::assertTrue($client->getResponse()->headers->contains(
             'Content-Type',
             'application/json'
         ));
 
-        // Проверка содержимого ответа (Сообщение об ошибке)
         $json = json_decode($client->getResponse()->getContent(), true);
-        self::assertEquals('Пользователь с данным email уже существует', $json['message']);
 
-        //Пароль меньше 6 символов
+        self::assertNotEmpty($json['message']);
+        self::assertNotEmpty($json['message'][0]['message']);
+
+        // Проверка валидации длины пароля
         $user = [
-            'email' => 'testAnna@yandex.ru',
-            'password' => 'test',
+            'username' => 'test@study-on.local',
+            'password' => '123'
         ];
 
-        // Формируем запрос
         $client = self::getClient();
-        $client->jsonRequest(
+
+        $client->request(
             'POST',
-            $this->startingPath . '/register',
-            $user
+            $this->apiPath.'/register',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            $this->serializer->serialize($user, 'json')
         );
 
-        // Проверка статуса ответа, 400
-        $this->assertResponseCode(Response::HTTP_BAD_REQUEST, $client->getResponse());
+        $this->assertResponseCode(Response::HTTP_BAD_REQUEST);
 
-        // Проверка заголовка ответа, что он действительно в формате json
         self::assertTrue($client->getResponse()->headers->contains(
             'Content-Type',
             'application/json'
         ));
 
-        // Проверка содержимого ответа (Сообщение об ошибке)
+        $json = json_decode($client->getResponse()->getContent(), true);
+
+        self::assertNotEmpty($json['message']);
+        self::assertNotEmpty($json['message'][0]['message']);
+
+
+        // Проверка валидации полей на пустоту
+        $user = [
+            'username' => '',
+            'password' => ''
+        ];
+
+        $client->request(
+            'POST',
+            $this->apiPath.'/register',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            $this->serializer->serialize($user, 'json')
+        );
+
+        $this->assertResponseCode(Response::HTTP_BAD_REQUEST);
+
+        self::assertTrue($client->getResponse()->headers->contains(
+            'Content-Type',
+            'application/json'
+        ));
+
         $json = json_decode($client->getResponse()->getContent(), true);
         self::assertNotEmpty($json['message']);
+        self::assertNotEmpty($json['message'][0]['message']);
+        self::assertNotEmpty($json['message'][1]['message']);
+
+
+        // Проверка валидации поля email на корректность
+        $user = [
+            'username' => 'email',
+            'password' => 'Qwerty123'
+        ];
+
+        $client = self::getClient();
+
+        $client->request(
+            'POST',
+            $this->apiPath.'/register',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            $this->serializer->serialize($user, 'json')
+        );
+
+        $this->assertResponseCode(Response::HTTP_BAD_REQUEST);
+
+        self::assertTrue($client->getResponse()->headers->contains(
+            'Content-Type',
+            'application/json'
+        ));
+
+        $json = json_decode($client->getResponse()->getContent(), true);
+        self::assertNotEmpty($json['message']);
+        self::assertNotEmpty($json['message'][0]['message']);
+
+
+        // Проверка валидации при существующем пользователе
+        $user = [
+            'username' => 'artem@user.com',
+            'password' => '123654'
+        ];
+
+        $client->request(
+            'POST',
+            $this->apiPath.'/register',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            $this->serializer->serialize($user, 'json')
+        );
+
+
+        self::assertTrue($client->getResponse()->headers->contains(
+            'Content-Type',
+            'application/json'
+        ));
+
+        $json = json_decode($client->getResponse()->getContent(), true);
+
+        self::assertNotEmpty($json['code']);
+        self::assertNotEmpty($json['message']);
+
     }
 }

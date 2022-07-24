@@ -52,4 +52,25 @@ class PaymentService
 
         return $transaction;
     }
+    // Пополнение баланса пользователя
+    public function deposit(User $user, float $amount): void
+    {
+        $this->em->getConnection()->beginTransaction();
+        try {
+            $transaction = new Transaction();
+            $transaction->setType(2);
+            $transaction->setUserBilling($user);
+            $transaction->setCreatedAt(new DateTime());
+            $transaction->setAmount($amount);
+
+            $user->setBalance($user->getBalance() + $amount);
+
+            $this->em->persist($transaction);
+            $this->em->flush();
+            $this->em->getConnection()->commit();
+        } catch (\Exception $e) {
+            $this->em->getConnection()->rollBack();
+            throw new \Exception($e->getMessage(), $e->getCode());
+        }
+    }
 }

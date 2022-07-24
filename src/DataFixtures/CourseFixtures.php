@@ -13,45 +13,51 @@ class CourseFixtures extends Fixture
         $courses = [
             [
                 'code' => 'PPBIB',
+                'title' => 'Программирование на Python (базовый)',
                 'type' => 2,
                 'price' => 2000,
+            ],
+            [
+                'code' => 'PPBIB3',
                 'title' => 'Программирование на Python (базовый)',
+                'type' => 2,
+                'price' => 2000,
             ],
             [
                 'code' => 'PPBI',
+                'title' => 'Программирование на Python (продвинутый)',
                 'type' => 1,
                 'price' => 2000,
-                'title' => 'Программирование на Python (продвинутый)',
             ],
             [
                 'code' => 'PPBI2',
+                'title' => 'Программирование на Python 2',
                 'type' => 3,
                 'price' => 2000,
-                'title' => 'Программирование на Python 2',
             ],
             [
                 'code' => 'MSCB',
+                'title' => 'Математическая статистика (базовый)',
                 'type' => 2,
                 'price' => 1000,
-                'title' => 'Математическая статистика (базовый)',
             ],
             [
                 'code' => 'MSC',
+                'title' => 'Математическая статистика',
                 'type' => 3,
                 'price' => 1000,
-                'title' => 'Математическая статистика',
             ],
             [
                 'code' => 'CAMPB',
+                'title' => 'Курс подготовки вожатых (базовый)',
                 'type' => 2,
                 'price' => 3000,
-                'title' => 'Курс подготовки вожатых (базовый)',
             ],
             [
                 'code' => 'CAMP',
+                'title' => 'Курс подготовки вожатых (продвинутый)',
                 'type' => 1,
                 'price' => 3000,
-                'title' => 'Курс подготовки вожатых (продвинутый)',
             ],
         ];
 
@@ -59,10 +65,10 @@ class CourseFixtures extends Fixture
             $newCourse = new Course();
             $newCourse->setCode($course['code']);
             $newCourse->setType($course['type']);
+            $newCourse->setTitle($course['title']);
             if (isset($course['price'])) {
                 $newCourse->setPrice($course['price']);
             }
-            $newCourse->setTitle($course['title']);
             $manager->persist($newCourse);
         }
         $manager->flush();
